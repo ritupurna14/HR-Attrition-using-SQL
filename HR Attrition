@@ -1,0 +1,86 @@
+%%SQL
+Mysql:///HR Attrition
+create database hr
+use hr
+select * from hrdata;
+
+alter table hrdata 
+add column Attrition_count int(10)
+
+update hrdata
+set attrition_count = case
+when Attrition = 'Yes' then '1'
+else '0'
+end;
+
+/*Attrition of total employees according to their age */
+select AgeGroup , sum(attrition_count) as Attrition
+from hrdata
+group by AgeGroup;
+
+/* Attrition of employees according to their salary slab */
+select salarySlab , sum(attrition_count) as Salary
+from hrdata
+group by salaryslab;
+
+/*Attrition of employees according to their year at the company*/
+select yearsatcompany , sum(attrition_count) as yearspent
+from hrdata
+group by yearsatcompany;
+
+/* Attrition of employees according to their job role*/
+select jobrole , sum(attrition_count) as jobroles
+from hrdata
+group by jobrole;
+
+/*Attrition of employees according to their satisfaction level or rate from different job role*/
+Select distinct jobrole , jobsatisfaction , sum(attrition_count) 
+from hrdata
+group by jobrole , jobsatisfaction ; 
+
+/*Fetch the details of employees having maximum and  minimmum salary working in different departments who received less than 15% salary hike*/
+
+select  department ,
+max(monthlyincome),
+min(monthlyincome)
+from hrdata
+where percentsalaryhike < 15
+group by department;
+
+/* calculate the average monthly income of all the employees who worked more than 3 years whose education backgroud is medical*/
+
+select avg(monthlyincome) 
+from hrdata
+where totalworkingyears > 3
+and educationfield = 'medical'
+group by educationfield;
+
+/* Identify the total number of male and female employees  under attrition whose marital status is married and haven't received promotion in the last 2 years*/
+
+select gender , count(empid)
+from hrdata
+where maritalstatus = 'married'
+and yearssincelastpromotion = 2
+group by gender;
+
+/* Employees with max performance rating but no promotion for 4 years and above*/
+
+select * from hrdata
+where performancerating = (select max(performancerating) from hrdata) 
+and yearssincelastpromotion >=4;
+
+/* Who maximum and minimum percentage salary hike*/
+
+select yearsatcompany , performancerating , yearssincelastpromotion ,
+max(percentsalaryhike) ,
+min(percentsalaryhike)
+from hrdata
+group by yearsatcompany , performancerating , yearssincelastpromotion 
+order by max(percentsalaryhike) desc , min(percentsalaryhike) desc;
+
+/* Employees working overtime but given minimum salary hike and are mopre then 5 years with company */
+
+select * from hrdata
+where overtime = 'yes' and
+percentsalaryhike = (select min(percentsalaryhike) from hrdata)
+and yearsatcompany > 5;
